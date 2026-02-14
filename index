@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brief für Patricia</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#06070a;
+      --env:#d8b892;
+      --env2:#c4a575;
+      --envFlap:#e8c9a3;
+      --envShadow:#8b7352;
+      --envLine: rgba(0,0,0,.12);
+      --paper:#f8f3eb;
+      --paper2:#e8ddc5;
+      --ink:#2a2520;
+      --wax:#a83232;
+      --wax2:#6a1515;
+      --radius: 8px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:
+        radial-gradient(900px 520px at 50% 25%, #1a1f2b 0%, var(--bg) 70%),
+        linear-gradient(180deg, #0c0f18, var(--bg));
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      color:#d9dbe2;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* ---------- floating hearts ---------- */
+    .hearts{
+      position:fixed; inset:0;
+      pointer-events:none;
+      z-index:1;
+      opacity:0;
+      transition: opacity 800ms ease 400ms;
+    }
+    .hearts.active{
+      opacity:.45;
+    }
+    
+    /* hearts that float above letter */
+    .hearts-above{
+      position:fixed; inset:0;
+      pointer-events:none;
+      z-index:100;
+      opacity:0;
+      transition: opacity 800ms ease 400ms;
+    }
+    .hearts-above.active{
+      opacity:.45;
+    }
+    .heart{
+      position:absolute;
+      width:20px; 
+      height:20px;
+      animation: floatUp linear infinite;
+      will-change: transform, opacity;
+    }
+    .heart:before,.heart:after{
+      content:"";
+      position:absolute;
+      width:20px; 
+      height:30px;
+      background: rgba(235, 65, 80, .80);
+      border-radius:20px 20px 0 0;
+    }
+    .heart:before{ 
+      left:9px;
+      transform: rotate(-45deg);
+      transform-origin: 0 100%;
+    }
+    .heart:after{ 
+      left:1px;
+      transform: rotate(45deg);
+      transform-origin: 100% 100%;
+    }
+
+    @keyframes floatUp{
+      0%   { transform:translateY(0); opacity:0; }
+      8%   { opacity:.70; }
+      88%  { opacity:.70; }
+      100% { transform:translateY(-95vh); opacity:0; }
+    }
+
+    /* ---------- layout ---------- */
+    .wrap{
+      position:relative;
+      z-index:2;
+      width:min(760px, 94vw);
+      text-align:center;
+    }
+
+    .stage{
+      height:560px;
+      display:grid;
+      place-items:center;
+    }
+
+    /* ---------- envelope component ---------- */
+    .env{
+      position:relative;
+      width:min(560px, 92vw);
+      aspect-ratio: 560 / 360;
+      cursor:pointer;
+      user-select:none;
+      outline:none;
+      filter: drop-shadow(0 32px 48px rgba(0,0,0,.75));
+      transform: translateZ(0);
+    }
+    .env:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: calc(var(--radius) + 2px);
+      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.4));
+      z-index:-1;
+    }
+    .env:focus-visible{
+      outline: 3px solid rgba(255,255,255,.55);
+      outline-offset: 10px;
+      border-radius: calc(var(--radius) + 6px);
+    }
+
+    /* base rectangle */
+    .env-base{
+      position:absolute; 
+      inset:0;
+      border-radius: var(--radius);
+      background: 
+        linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 35%),
+        linear-gradient(225deg, rgba(0,0,0,.12) 0%, transparent 30%),
+        linear-gradient(180deg, var(--env), var(--env2));
+      box-shadow:
+        inset 0 2px 6px rgba(255,255,255,.3),
+        inset 0 -4px 10px rgba(0,0,0,.2),
+        inset 3px 0 8px rgba(0,0,0,.1),
+        inset -3px 0 8px rgba(0,0,0,.1);
+      overflow:hidden;
+    }
+    
+    .env-base:before{
+      content:"";
+      position:absolute;
+      left:0; right:0;
+      top:0;
+      height:52%;
+      background: 
+        linear-gradient(180deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.35) 25%, rgba(0,0,0,.18) 50%, transparent 100%);
+      clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+    }
+    
+    .env-pocket{
+      position:absolute;
+      left:5%;
+      right:5%;
+      top:5%;
+      height:45%;
+      background: 
+        linear-gradient(180deg, rgba(139,115,82,.15) 0%, rgba(139,115,82,.08) 50%, transparent 100%);
+      clip-path: polygon(0 0, 100% 0, 93% 100%, 7% 100%);
+      z-index:1;
+      pointer-events:none;
+    }
+    
+    .env-base:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+      opacity:.25;
+      mix-blend-mode: multiply;
+    }
+
+    .env-lines{
+      position:absolute; 
+      inset:0;
+      pointer-events:none;
+      z-index:3;
+    }
+    
+    .env-lines:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(135deg, transparent 49.5%, rgba(0,0,0,.15) 50%, transparent 50.5%) left bottom / 51% 51% no-repeat,
+        linear-gradient(45deg, transparent 49.5%, rgba(0,0,0,.15) 50%, transparent 50.5%) right bottom / 51% 51% no-repeat;
+    }
+
+    .flap{
+      position:absolute;
+      left:0; right:0; 
+      top:0;
+      height:50%;
+      background: 
+        linear-gradient(180deg, rgba(255,255,255,.18) 0%, transparent 25%, rgba(0,0,0,.08) 100%),
+        linear-gradient(180deg, #e8c9a3, #d4ae7e);
+      clip-path: polygon(0 0, 50% 100%, 100% 0);
+      transform-origin: 50% 0%;
+      transform: rotateX(0deg);
+      transition: transform 520ms cubic-bezier(.18,.95,.12,1);
+      z-index:4;
+      border-radius: var(--radius) var(--radius) 0 0;
+      box-shadow: 
+        inset 0 4px 10px rgba(255,255,255,.25),
+        0 6px 16px rgba(0,0,0,.35);
+    }
+
+    .env-address{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform: translate(-50%, -50%);
+      font-family:"EB Garamond", serif;
+      font-size:17px;
+      font-style: normal;
+      color:rgba(42,37,32,.60);
+      text-align:center;
+      z-index:6;
+      pointer-events:none;
+      transition: opacity 300ms ease;
+      width:100%;
+    }
+    .env-address .top{
+      position:absolute;
+      left:50%;
+      top:-115px;
+      transform: translateX(-50%);
+      font-size:15px;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+      display:block;
+      color:rgba(42,37,32,.60);
+      font-family:"EB Garamond", serif;
+      font-style: normal;
+    }
+    .env-address .name{
+      position:absolute;
+      left:50%;
+      top:120px;
+      transform: translateX(-50%);
+      font-size:15px;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+      display:block;
+      white-space:nowrap;
+      color:rgba(42,37,32,.60);
+      font-family:"EB Garamond", serif;
+      font-style: normal;
+    }
+    .seal{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform: translate(-50%, -50%);
+      width:85px; height:85px;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 32% 25%, rgba(255,255,255,.4), transparent 42%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.1) 25%, transparent 60%),
+        radial-gradient(circle at 68% 72%, rgba(0,0,0,.5), transparent 48%),
+        radial-gradient(ellipse at 50% 50%, #b83838 0%, #9a2828 40%, #6a1515 100%);
+      box-shadow:
+        inset 0 8px 16px rgba(0,0,0,.65),
+        inset 0 -4px 12px rgba(255,255,255,.12),
+        inset -4px 4px 14px rgba(0,0,0,.45),
+        0 12px 28px rgba(0,0,0,.75),
+        0 4px 10px rgba(0,0,0,.55);
+      display:grid;
+      place-items:center;
+      font-family:"EB Garamond", serif;
+      font-weight:400;
+      font-size:23px;
+      color:#3a0a0a;
+      letter-spacing:.15em;
+      text-shadow: 
+        0 2px 3px rgba(0,0,0,.5),
+        0 1px 2px rgba(0,0,0,.3);
+      z-index:5;
+      transition: opacity 220ms ease, transform 220ms ease;
+      border:2.5px solid rgba(0,0,0,.45);
+    }
+    
+    .seal:before{
+      content:"";
+      position:absolute;
+      inset:-6px;
+      border-radius:50%;
+      background: 
+        radial-gradient(circle at 12% 78%, rgba(150,40,40,.9) 0%, transparent 24%),
+        radial-gradient(circle at 85% 15%, rgba(150,40,40,.85) 0%, transparent 28%),
+        radial-gradient(circle at 70% 90%, rgba(150,40,40,.88) 0%, transparent 26%),
+        radial-gradient(circle at 22% 8%, rgba(150,40,40,.8) 0%, transparent 30%),
+        radial-gradient(circle at 90% 65%, rgba(150,40,40,.85) 0%, transparent 22%),
+        radial-gradient(circle at 50% 5%, rgba(150,40,40,.75) 0%, transparent 20%);
+      z-index:-1;
+      filter: blur(1.5px);
+    }
+    
+    .seal:after{
+      content:"";
+      position:absolute;
+      left:18%;
+      top:15%;
+      width:42%;
+      height:42%;
+      background: 
+        radial-gradient(ellipse at 35% 35%, rgba(255,255,255,.45), rgba(255,255,255,.2) 48%, transparent 72%);
+      border-radius:50%;
+      transform: rotate(-28deg);
+      filter: blur(4px);
+    }
+
+    .env-pocket-open{
+      position:absolute;
+      left:8%;
+      right:8%;
+      top:0;
+      height:48%;
+      background: 
+        linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.25) 30%, rgba(0,0,0,.12) 60%, transparent 100%);
+      clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+      z-index:1;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity 400ms ease 200ms;
+    }
+    
+    .env.is-open .env-pocket-open{
+      opacity:1;
+    }
+
+    .letter{
+      position:absolute;
+      left:8%;
+      right:8%;
+      bottom:8%;
+      height:80%;
+      border-radius: 4px;
+      background: 
+        linear-gradient(135deg, rgba(139,115,82,.03) 0%, transparent 40%),
+        linear-gradient(180deg, #f9f6f0 0%, #f4ede0 50%, #ede3cf 100%);
+      box-shadow:
+        0 26px 40px rgba(0,0,0,.65),
+        0 10px 20px rgba(0,0,0,.45),
+        inset 0 0 0 1px rgba(200,180,150,.15);
+      overflow:hidden;
+      transform: translateY(100%);
+      opacity: 0;
+      transition: transform 560ms cubic-bezier(.18,.95,.12,1), opacity 300ms ease;
+      z-index:2;
+    }
+    
+    .letter:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 600 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
+      opacity:.15;
+      pointer-events:none;
+      mix-blend-mode: multiply;
+    }
+    
+    .letter:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: 
+        radial-gradient(ellipse at 20% 15%, rgba(139,115,82,.04) 0%, transparent 8%),
+        radial-gradient(ellipse at 85% 25%, rgba(139,115,82,.05) 0%, transparent 10%),
+        radial-gradient(ellipse at 65% 80%, rgba(139,115,82,.04) 0%, transparent 9%),
+        radial-gradient(ellipse at 15% 70%, rgba(139,115,82,.03) 0%, transparent 7%);
+      pointer-events:none;
+    }
+
+    .letter-inner{
+      height:100%;
+      padding:28px 28px 24px;
+      overflow:auto;
+      font-family:"EB Garamond", serif;
+      color:var(--ink);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,0,0,.25) transparent;
+    }
+    .letter-inner::-webkit-scrollbar{ width:10px; }
+    .letter-inner::-webkit-scrollbar-thumb{
+      background: rgba(0,0,0,.22);
+      border-radius:999px;
+      border:3px solid rgba(255,255,255,.15);
+      background-clip: padding-box;
+    }
+
+    .title{
+      font-family:"EB Garamond", serif;
+      font-weight:400;
+      font-size:18px;
+      margin:0 0 8px;
+      letter-spacing:.02em;
+      font-style: italic;
+    }
+    .text{
+      margin:0;
+      font-size:18px;
+      line-height:1.7;
+      white-space:pre-line;
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .env.is-open .flap{
+      transform: rotateX(180deg);
+    }
+    .env.is-open .seal{
+      opacity:0;
+      transform: translate(-50%, -50%) scale(.88);
+      pointer-events:none;
+    }
+    .env.is-open .letter{
+      transform: translateY(0%);
+      opacity: 1;
+    }
+    .env.is-open .env-lines{
+      opacity: 0;
+    }
+    .env.is-open .env-address{
+      opacity: 0;
+    }
+
+    @media (max-width:560px){
+      .stage{ height:520px; }
+      .letter-inner{ padding:22px 20px 18px; }
+      .text{ font-size:17px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hearts" aria-hidden="true" id="hearts"></div>
+  <div class="hearts-above" aria-hidden="true" id="hearts-above"></div>
+
+  <div class="wrap">
+    <div class="stage">
+      <div class="env" id="env" role="button" tabindex="0" aria-expanded="false" aria-label="Kuvert öffnen">
+        <div class="env-base"></div>
+        <div class="env-pocket"></div>
+        <div class="env-pocket-open"></div>
+        
+        <div class="env-address" aria-hidden="true">
+          <span class="top">Persönlich</span>
+          <span class="name">Patricia Trish Hager</span>
+        </div>
+        
+        <div class="letter" aria-hidden="true">
+          <div class="letter-inner">
+            <h2 class="title">Liebe Patricia,</h2>
+            <p class="text">ich weiß, dass wir im Moment nicht wirklich miteinander reden. Und das macht mich ehrlich gesagt traurig. Gerade heute habe ich viel über uns nachgedacht, darüber, dass wir Geschwister sind und wie wir uns über die Jahre voneinander entfernt haben.
+
+Du hast einmal gesagt, ich wäre nie wirklich als großer Bruder für dich da gewesen. Darüber habe ich viel nachgedacht. Vielleicht gab es Momente, in denen du etwas von mir gebraucht hättest, das ich dir nicht geben konnte. Aber ehrlich gesagt hast du auch nie gefragt, was alles in mir vorging, was die Situation zusätzlich kompliziert gemacht hat. Trotzdem wünsche ich mir, dass du verstehst: Damals war ich selbst noch ein Kind. Als Mama und Papa sich getrennt haben, war ich elf und du neun. Sehr viel von dem Konflikt wurde auf meinem Rücken ausgetragen, und daran wäre ich fast zerbrochen. Ich konnte kein „starker großer Bruder" sein. Ich habe selbst versucht, irgendwie damit klarzukommen.
+
+Als ich mit fünfzehn zu Papa gezogen bin, war das nicht gegen dich. Das war eine Entscheidung aus meiner damaligen Situation heraus. Vielleicht waren meine Gründe für dich nie wirklich nachvollziehbar, vielleicht habe ich sie auch nie gut genug erklärt. Aber ich weiß noch, dass ich mich oft verletzt gefühlt habe, oft das Gefühl hatte, nicht wirklich meinen Platz zu haben. Und ich habe eine männliche Bezugsperson extrem vermisst. Das ist etwas, das weder du noch Mama je wirklich verstanden haben. Das heißt nicht, dass ich immer alles richtig gemacht habe. Ich habe mich sicher auch oft falsch verhalten. Ich war genauso ein Teenager wie du. Und vieles, wenn auch nicht alles, lag damals nicht in unserer Verantwortung.
+
+Was mich heute traurig macht, ist nicht nur die Scheidung an sich. Sondern dass wir es als Geschwister nicht geschafft haben, zusammenzuhalten. Das können wir nicht rückgängig machen. Aber was wir vielleicht noch verändern können, ist unsere Beziehung heute.
+
+Wir sind jetzt fast dreißig. Es sind über fünfzehn Jahre vergangen, seit die Scheidung begonnen hat, und über zehn Jahre, seit sich unsere Wege stärker getrennt haben. Wir sind nicht mehr die Kinder oder Teenager von damals. Wir sind erwachsen und haben uns weiterentwickelt. Und ich glaube, wir müssen akzeptieren, dass wir uns durch den geringen Kontakt irgendwann aufgehört haben, wirklich zu kennen.
+
+Ich denke, es wäre fair, wenn wir auf einem neutralen Level wieder bei Null anfangen. Uns neu kennenlernen. Als die Menschen, die wir heute sind. Ohne Unterstellungen. Ohne zu glauben, man wüsste noch genau, wie der andere ist. Denn das tun wir ehrlich gesagt nicht mehr, weil wir uns entfremdet haben. In anderen Worten: Wir müssten von jetzt an neu anfangen.
+
+Du bist nach wie vor meine Schwester und ich liebe dich. Wir werden bald dreißig, und das Leben ist vergänglich. Ich fände es schön, dich in den nächsten vierzig, fünfzig, vielleicht sogar sechzig oder siebzig Jahren als meine Schwester in meinem Leben zu haben. Eine Schwester, der ich vertrauen kann und die für mich da ist. Und genauso wäre ich wirklich sehr, sehr gerne für dich da.
+
+Ich glaube wirklich, dass wir noch etwas Gutes zwischen uns aufbauen können. Vielleicht nicht perfekt, vielleicht nicht wie in Filmen, aber echt. Als Bruder und Schwester.
+
+Du fehlst mir in meinem Leben. Mir fehlt dieses Gefühl, dass egal was passiert, wir Familie sind, die reden kann, lachen kann oder einfach nebeneinander existieren kann, ohne Spannung.
+
+Ich schreibe dir das nicht, um alte Schuldfragen aufzumachen. Sondern weil ich mir wünsche, dass wir vielleicht nochmal neu anfangen. Ehrlich, langsam und ohne so zu tun, als hätte die Vergangenheit uns nicht beide verletzt.
+
+Ich hab dich lieb. Und ich hoffe, dass das vielleicht ein Anfang sein kann.
+
+Alles Liebe zum Valentinstag,
+Dein Bruder
+Michael</p>
+          </div>
+        </div>
+
+        <div class="env-lines"></div>
+        <div class="flap"></div>
+        <div class="seal" aria-hidden="true">MH</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const env = document.getElementById('env');
+    const letter = env.querySelector('.letter');
+    const heartsContainer = document.getElementById('hearts');
+    const heartsAboveContainer = document.getElementById('hearts-above');
+
+    function setOpen(open){
+      env.classList.toggle('is-open', open);
+      env.setAttribute('aria-expanded', String(open));
+      letter.setAttribute('aria-hidden', String(!open));
+      
+      if(open){
+        heartsContainer.classList.add('active');
+        heartsAboveContainer.classList.add('active');
+      } else {
+        heartsContainer.classList.remove('active');
+        heartsAboveContainer.classList.remove('active');
+      }
+    }
+    function toggle(){ setOpen(!env.classList.contains('is-open')); }
+
+    env.addEventListener('click', toggle);
+    env.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+
+    // Create hearts behind letter - more hearts
+    const hearts = document.getElementById('hearts');
+    const COUNT_BEHIND = 60;
+    const rand = (a,b)=>Math.random()*(b-a)+a;
+
+    for(let i=0;i<COUNT_BEHIND;i++){
+      const h = document.createElement('div');
+      h.className='heart';
+      const s = rand(20, 45);
+      h.style.width = s+'px';
+      h.style.height = s+'px';
+      h.style.left = rand(-10, 110)+'vw';
+      h.style.top = '105vh';
+      h.style.opacity = rand(.45,.85);
+      const duration = rand(10, 18);
+      h.style.animationDuration = duration+'s';
+      h.style.animationDelay = rand(0, duration)+'s';
+      hearts.appendChild(h);
+    }
+    
+    // Create hearts above letter - fewer hearts (25%)
+    const heartsAbove = document.getElementById('hearts-above');
+    const COUNT_ABOVE = 15;
+
+    for(let i=0;i<COUNT_ABOVE;i++){
+      const h = document.createElement('div');
+      h.className='heart';
+      const s = rand(20, 45);
+      h.style.width = s+'px';
+      h.style.height = s+'px';
+      h.style.left = rand(-10, 110)+'vw';
+      h.style.top = '105vh';
+      h.style.opacity = rand(.45,.85);
+      const duration = rand(10, 18);
+      h.style.animationDuration = duration+'s';
+      h.style.animationDelay = rand(0, duration)+'s';
+      heartsAbove.appendChild(h);
+    }
+  </script>
+</body>
+</html>
