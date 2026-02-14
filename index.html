@@ -450,6 +450,14 @@
 </head>
 
 <body>
+  <script>
+    const password = "190299";   // dein Passwort
+    let input = prompt("Passwort = dein Geburtsdatum in 6 Ziffern");
+    if (input !== password) {
+      document.body.innerHTML = "<h1>Access denied</h1>";
+    }
+  </script>
+  
   <div class="hearts" aria-hidden="true" id="hearts"></div>
   <div class="hearts-above" aria-hidden="true" id="hearts-above"></div>
 
